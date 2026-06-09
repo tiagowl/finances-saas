@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: finances-saas-api
+    runtime: node
+    rootDir: src/backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:render
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0

@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("user")
+
+  categories         Category[]
+  occasionalExpenses OccasionalExpense[]
+  recurringExpenses  RecurringExpense[]
+  occasionalRevenues OccasionalRevenue[]
+  recurringRevenues  RecurringRevenue[]
+  accessLogs         AccessLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AccessLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id])
+  action       String
+  page         String?
+  ip           String?
+  userAgent    String?
+  errorMessage String?  @db.Text
+  status       String   @default("success")
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([action])
+}
+
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  notes     String?  @db.Text
+  maxBudget Decimal? @db.Decimal(10, 2)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+
+  occasionalExpenses OccasionalExpense[]
+  recurringExpenses  RecurringExpense[]
+  occasionalRevenues OccasionalRevenue[]
+  recurringRevenues  RecurringRevenue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, userId])
+  @@index([userId])
+}
+
+model OccasionalExpense {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  notes      String?  @db.Text
+  price      Decimal  @db.Decimal(10, 2)
+  date       DateTime
+  categoryId String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id])
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([date])
+  @@index([userId])
+}
+
+model RecurringExpense {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  notes        String?  @db.Text
+  price        Decimal  @db.Decimal(10, 2)
+  installments Int?
+  categoryId   String   @db.Uuid
+  category     Category @relation(fields: [categoryId], references: [id])
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([userId])
+}
+
+model OccasionalRevenue {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  notes      String?   @db.Text
+  price      Decimal   @db.Decimal(10, 2)
+  date       DateTime
+  categoryId String?   @db.Uuid
+  category   Category? @relation(fields: [categoryId], references: [id])
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([date])
+  @@index([userId])
+}
+
+model RecurringRevenue {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  notes        String?   @db.Text
+  price        Decimal   @db.Decimal(10, 2)
+  installments Int?
+  categoryId   String?   @db.Uuid
+  category     Category? @relation(fields: [categoryId], references: [id])
+  userId       String    @db.Uuid
+  user         User      @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([userId])
+}

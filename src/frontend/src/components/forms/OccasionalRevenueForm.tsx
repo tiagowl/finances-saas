@@ -1,0 +1,77 @@
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
+import RichTextEditor from '../ui/RichTextEditor';
+import { occasionalRevenueFormSchema, type OccasionalRevenueFormValues } from '../../lib/formSchemas';
+
+interface OccasionalRevenueFormProps {
+  initialData?: { name?: string; price?: number; date?: string; notes?: string | null };
+  onSubmit: (data: { name: string; price: number; date: string; notes?: string }) => Promise<void>;
+  onCancel: () => void;
+}
+
+export default function OccasionalRevenueForm({ initialData, onSubmit, onCancel }: OccasionalRevenueFormProps) {
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<OccasionalRevenueFormValues>({
+    resolver: zodResolver(occasionalRevenueFormSchema),
+    defaultValues: {
+      name: initialData?.name || '',
+      price: initialData?.price ?? undefined,
+      date: initialData?.date ? initialData.date.split('T')[0] : '',
+      notes: initialData?.notes || '',
+    },
+  });
+
+  useEffect(() => {
+    reset({
+      name: initialData?.name || '',
+      price: initialData?.price ?? undefined,
+      date: initialData?.date ? initialData.date.split('T')[0] : '',
+      notes: initialData?.notes || '',
+    });
+  }, [initialData, reset]);
+
+  const onFormSubmit = async (data: OccasionalRevenueFormValues) => {
+    try {
+      await onSubmit({
+        name: data.name,
+        price: data.price,
+        date: new Date(data.date).toISOString(),
+        notes: data.notes,
+      });
+    } catch {
+      setError('root', { message: 'Erro ao salvar. Tente novamente.' });
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4" noValidate>
+      <Input label="Nome" required placeholder="ex: Freelance" error={errors.name?.message} {...register('name')} />
+      <Input label="Valor" type="number" step="0.01" min="0.01" required placeholder="ex: 2500" error={errors.price?.message} {...register('price')} />
+      <Input label="Data" type="date" required error={errors.date?.message} {...register('date')} />
+
+      <Controller
+        name="notes"
+        control={control}
+        render={({ field }) => (
+          <RichTextEditor label="Anotações" value={field.value || ''} onChange={field.onChange} placeholder="Descrição opcional..." error={errors.notes?.message} />
+        )}
+      />
+
+      {errors.root && <p className="text-sm text-red-500">{errors.root.message}</p>}
+
+      <div className="flex justify-end gap-3 pt-2">
+        <Button variant="secondary" onClick={onCancel} disabled={isSubmitting} type="button">Cancelar</Button>
+        <Button type="submit" loading={isSubmitting}>{initialData ? 'Salvar' : 'Criar'}</Button>
+      </div>
+    </form>
+  );
+}

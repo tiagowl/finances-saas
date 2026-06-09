@@ -45,7 +45,29 @@ Como Product Owner, preciso que você:
 ### Para Análise de Requisitos
 ```
 Analise os seguintes requisitos e crie user stories detalhadas:
-[Inserir requisitos aqui]
+- sistema para controle de finanças;
+
+- dashboard com as estatísticas de total de despesas avulsas, total de despesas recorrentes, e mostrando últimos gastos;
+
+- crud de despesas avulsas, com nome, observações(rich text), preço, data da despesa, categoria;
+
+- crud de despesas recorrentes, com nome, preço, observações(rich text), categoria;
+
+- crud de receitas avulsas com nome, preço, observações(rich text), data da receita, categoria;
+
+- crud de receitas recorrentes com nome, preço, observações e categoria;
+
+- crud de categorias com nome, observações(rich text) e orçamento máximo;
+
+- nas páginas de receitas avulsas e recorrentes, despesas avulsas e recorrentes, mostrar o total dos preços das entidades;
+
+- o frontend deverá ser desenvolvido com react com tailwind e zustand;
+
+- O backend deverá ser desenvolvido com node, prisma orm, zod, typescript, swagger, fastify, clean architecture, DDD e repository pattern;
+
+- o banco de dados será o neon;
+
+- O backend será hospedado no render;
 
 Foque em:
 - Identificar personas
