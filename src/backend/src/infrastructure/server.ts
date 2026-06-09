@@ -75,6 +75,7 @@ import { registerDashboardRoutes } from '../presentation/routes/dashboard.routes
 import { registerAuthRoutes } from '../presentation/routes/auth.routes.js';
 import { registerAdminRoutes } from '../presentation/routes/admin.routes.js';
 import { registerAccessLogHook } from './accessLogMiddleware.js';
+import { buildCorsOptions } from './cors.js';
 
 import { DomainError, NotFoundError, ConflictError, ValidationError } from '../domain/errors/DomainError.js';
 import { ZodError } from 'zod';
@@ -87,9 +88,7 @@ const app = Fastify({
 });
 
 async function bootstrap() {
-  await app.register(cors, {
-    origin: process.env.CORS_ORIGINS?.split(',') ?? ['http://localhost:5173'],
-  });
+  await app.register(cors, buildCorsOptions());
 
   await app.register(rateLimit, {
     max: 100,
@@ -324,7 +323,12 @@ async function bootstrap() {
 
   // JWT verification hook for all protected routes
   app.addHook('preHandler', async (request, reply) => {
-    if (request.url.startsWith('/api/auth') || request.url === '/api/health') return;
+    // Preflight must pass without JWT so the browser can send the real request
+    if (request.method === 'OPTIONS') return;
+
+    const path = request.url.split('?')[0];
+    if (path.startsWith('/api/auth') || path === '/api/health') return;
+
     try {
       await request.jwtVerify();
     } catch {
